@@ -1,23 +1,7 @@
-Spec examples
+I may have taken Postel's law too far, but I did have fun doing so
 
-```
-$ roman ix
+```shell
+~/d/romanes-eunt-domus (main)> ./roman xiiiiiiv
 9
-ix
-
-$ roman XIIII
-14
-XIV
-
-$ roman MCMXCIX
-1999
-MCMXCIX
+IX
 ```
-
-Spec notes:
-
-* [Roman numerals on Wikipedia](https://en.wikipedia.org/wiki/Roman_numerals)
-* Do create an abstract data type to represent a roman number.
-* Do write unit tests.
-* Do include links to any references you used.
-* Do apply Postel's Law

@@ -1,8 +1,8 @@
 package numeral
 
 import (
-	"testing"
 	tu "roman/testingutil"
+	"testing"
 )
 
 type parserTestCase = tu.UnaryFuncTestCase[string, []RomanNumeral]
