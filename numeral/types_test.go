@@ -23,7 +23,7 @@ func TestCompareTo(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("Compare %d to %d", tt.left.Value(), tt.right.Value()), func(t *testing.T) {
+		t.Run(fmt.Sprintf("Compare %d to %", tt.left.Value(), tt.right.Value()), func(t *testing.T) {
 			if compared := tt.left.CompareTo(&tt.right); compared != tt.expected {
 				t.Errorf("Expected %v but got %v", tt.expected, compared)
 			}

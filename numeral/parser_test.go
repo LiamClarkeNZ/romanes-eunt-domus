@@ -5,7 +5,7 @@ import (
 	tu "roman/testingutil"
 )
 
-type parserTestCase = tu.TestCase[string, []RomanNumeral]
+type parserTestCase = tu.UnaryFuncTestCase[string, []RomanNumeral]
 
 var (
 	one         = NewRomanNumeral(1)
@@ -32,7 +32,7 @@ func TestSingleNumerals(t *testing.T) {
 		{Input: "D", Expected: []RomanNumeral{fiveHundred}},
 		{Input: "M", Expected: []RomanNumeral{oneThousand}},
 	}
-	tu.ExecuteTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
 }
 
 func TestAdditiveNumerals(t *testing.T) {
@@ -45,7 +45,7 @@ func TestAdditiveNumerals(t *testing.T) {
 		{Input: "XXVI", Expected: []RomanNumeral{ten, ten, five, one}},
 		{Input: "MMDCL", Expected: []RomanNumeral{oneThousand, oneThousand, fiveHundred, oneHundred, fifty}},
 	}
-	tu.ExecuteTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
 }
 
 func TestSubtractiveNumerals(t *testing.T) {
@@ -56,7 +56,7 @@ func TestSubtractiveNumerals(t *testing.T) {
 		{Input: "VL", Expected: []RomanNumeral{subFive, fifty}},
 		{Input: "CM", Expected: []RomanNumeral{subOneHundred, oneThousand}},
 	}
-	tu.ExecuteTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
 }
 
 func TestCaseInsensitivity(t *testing.T) {
@@ -64,7 +64,7 @@ func TestCaseInsensitivity(t *testing.T) {
 		{Input: "i", Expected: []RomanNumeral{one}},
 		{Input: "iv", Expected: []RomanNumeral{subOne, five}},
 	}
-	tu.ExecuteTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
 }
 
 func TestScenariosFromSpec(t *testing.T) {
@@ -73,7 +73,7 @@ func TestScenariosFromSpec(t *testing.T) {
 		{Input: "XIIII", Expected: []RomanNumeral{ten, one, one, one, one}},
 		{Input: "MCMXCIX", Expected: []RomanNumeral{oneThousand, subOneHundred, oneThousand, subTen, oneHundred, subOne, ten}},
 	}
-	tu.ExecuteTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
 }
 
 // testing utils below
