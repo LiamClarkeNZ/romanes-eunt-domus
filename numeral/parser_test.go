@@ -1,10 +1,11 @@
 package numeral
 
 import (
-	"fmt"
-	"reflect"
 	"testing"
+	tu "roman/testingutil"
 )
+
+type parserTestCase = tu.TestCase[string, []RomanNumeral]
 
 var (
 	one         = NewRomanNumeral(1)
@@ -23,56 +24,56 @@ var (
 
 func TestSingleNumerals(t *testing.T) {
 	tests := []parserTestCase{
-		{input: "I", expected: []RomanNumeral{one}},
-		{input: "V", expected: []RomanNumeral{five}},
-		{input: "X", expected: []RomanNumeral{ten}},
-		{input: "L", expected: []RomanNumeral{fifty}},
-		{input: "C", expected: []RomanNumeral{oneHundred}},
-		{input: "D", expected: []RomanNumeral{fiveHundred}},
-		{input: "M", expected: []RomanNumeral{oneThousand}},
+		{Input: "I", Expected: []RomanNumeral{one}},
+		{Input: "V", Expected: []RomanNumeral{five}},
+		{Input: "X", Expected: []RomanNumeral{ten}},
+		{Input: "L", Expected: []RomanNumeral{fifty}},
+		{Input: "C", Expected: []RomanNumeral{oneHundred}},
+		{Input: "D", Expected: []RomanNumeral{fiveHundred}},
+		{Input: "M", Expected: []RomanNumeral{oneThousand}},
 	}
-	executeTests(t, tests)
+	tu.ExecuteTests(t, "Parse", Parse, tests)
 }
 
 func TestAdditiveNumerals(t *testing.T) {
 	tests := []parserTestCase{
-		{input: "II", expected: []RomanNumeral{one, one}},
-		{input: "III", expected: []RomanNumeral{one, one, one}},
-		{input: "VII", expected: []RomanNumeral{five, one, one}},
-		{input: "XII", expected: []RomanNumeral{ten, one, one}},
-		{input: "XV", expected: []RomanNumeral{ten, five}},
-		{input: "XXVI", expected: []RomanNumeral{ten, ten, five, one}},
-		{input: "MMDCL", expected: []RomanNumeral{oneThousand, oneThousand, fiveHundred, oneHundred, fifty}},
+		{Input: "II", Expected: []RomanNumeral{one, one}},
+		{Input: "III", Expected: []RomanNumeral{one, one, one}},
+		{Input: "VII", Expected: []RomanNumeral{five, one, one}},
+		{Input: "XII", Expected: []RomanNumeral{ten, one, one}},
+		{Input: "XV", Expected: []RomanNumeral{ten, five}},
+		{Input: "XXVI", Expected: []RomanNumeral{ten, ten, five, one}},
+		{Input: "MMDCL", Expected: []RomanNumeral{oneThousand, oneThousand, fiveHundred, oneHundred, fifty}},
 	}
-	executeTests(t, tests)
+	tu.ExecuteTests(t, "Parse", Parse, tests)
 }
 
 func TestSubtractiveNumerals(t *testing.T) {
 	tests := []parserTestCase{
-		{input: "IV", expected: []RomanNumeral{subOne, five}},
-		{input: "IIV", expected: []RomanNumeral{subOne, subOne, five}},
-		{input: "IX", expected: []RomanNumeral{subOne, ten}},
-		{input: "VL", expected: []RomanNumeral{subFive, fifty}},
-		{input: "CM", expected: []RomanNumeral{subOneHundred, oneThousand}},
+		{Input: "IV", Expected: []RomanNumeral{subOne, five}},
+		{Input: "IIV", Expected: []RomanNumeral{subOne, subOne, five}},
+		{Input: "IX", Expected: []RomanNumeral{subOne, ten}},
+		{Input: "VL", Expected: []RomanNumeral{subFive, fifty}},
+		{Input: "CM", Expected: []RomanNumeral{subOneHundred, oneThousand}},
 	}
-	executeTests(t, tests)
+	tu.ExecuteTests(t, "Parse", Parse, tests)
 }
 
 func TestCaseInsensitivity(t *testing.T) {
 	tests := []parserTestCase{
-		{input: "i", expected: []RomanNumeral{one}},
-		{input: "iv", expected: []RomanNumeral{subOne, five}},
+		{Input: "i", Expected: []RomanNumeral{one}},
+		{Input: "iv", Expected: []RomanNumeral{subOne, five}},
 	}
-	executeTests(t, tests)
+	tu.ExecuteTests(t, "Parse", Parse, tests)
 }
 
 func TestScenariosFromSpec(t *testing.T) {
 	tests := []parserTestCase{
-		{input: "ix", expected: []RomanNumeral{subOne, ten}},
-		{input: "XIIII", expected: []RomanNumeral{ten, one, one, one, one}},
-		{input: "MCMXCIX", expected: []RomanNumeral{oneThousand, subOneHundred, oneThousand, subTen, oneHundred, subOne, ten}},
+		{Input: "ix", Expected: []RomanNumeral{subOne, ten}},
+		{Input: "XIIII", Expected: []RomanNumeral{ten, one, one, one, one}},
+		{Input: "MCMXCIX", Expected: []RomanNumeral{oneThousand, subOneHundred, oneThousand, subTen, oneHundred, subOne, ten}},
 	}
-	executeTests(t, tests)
+	tu.ExecuteTests(t, "Parse", Parse, tests)
 }
 
 // testing utils below
@@ -81,19 +82,4 @@ func subtractiveNumeral(value int) RomanNumeral {
 	n := NewRomanNumeral(value)
 	n.SetContribution(Subtractive)
 	return n
-}
-
-type parserTestCase struct {
-	input    string
-	expected []RomanNumeral
-}
-
-func executeTests(t *testing.T, testCases []parserTestCase) {
-	for _, tt := range testCases {
-		t.Run(fmt.Sprintf("Parse %s", tt.input), func(t *testing.T) {
-			if got := Parse(tt.input); !reflect.DeepEqual(got, tt.expected) {
-				t.Errorf("Parse() = %v, want %v", got, tt.expected)
-			}
-		})
-	}
 }
