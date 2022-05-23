@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"regexp"
@@ -9,20 +10,37 @@ import (
 )
 
 func main() {
-	inputNumeral := validateInput()
-	parsedNumerals := numeral.Parse(inputNumeral)
+	notSoMuchPostel := flag.Bool("less-liberal", false, "Enforce some constraints about " +
+		"Roman numeral parsing, so that a roman numeral doesn't become a de facto primitive calculator")
+	flag.Usage = func() {
+		// if fmt.Fprintf is failing, there's not really any way to handle that sanely aside from a panic
+		_, err := fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s (-less-liberal) <roman number>\n", os.Args[0])
+		if err != nil {
+			panic("Couldn't even print the help text")
+		}
+		// Ask Flag to print the help text for -less-liberal
+		flag.PrintDefaults()
+	}
+	flag.Parse()
+	inputNumeral := validateInput(flag.Args())
+	parsedNumerals, err := numeral.Parse(inputNumeral, notSoMuchPostel)
+
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
 	summed := sumNumerals(parsedNumerals)
 	println(summed)
 	println(convertToRomanNumerals(summed))
 }
 
-func validateInput() string {
-	if len(os.Args) != 2 {
-		_, _ = fmt.Fprintf(os.Stderr, "Usage: %s <roman number>\n", os.Args[0])
+func validateInput(args []string) string {
+	if len(args) != 1 {
+		flag.Usage()
 		os.Exit(1)
 	}
 
-	inputNumeral := strings.TrimSpace(os.Args[1])
+	inputNumeral := strings.TrimSpace(args[0])
 
 	//Build (case-insensitive) regex from map keys so only one source of truth for what's a roman numeral exists
 	keys := extractKeys(numeral.RomanNumeralValues)
@@ -74,11 +92,6 @@ func (p conversionToRoman) AsString() string {
 }
 
 func convertToRomanNumerals(number int) string {
-	inverted := make(map[int]string)
-	for roman, arabic := range numeral.RomanNumeralValues {
-		inverted[arabic] = roman
-	}
-
 	places := []int{1000, 100, 10, 1}
 
 	parts := separateNumberIntoParts(number)
@@ -95,13 +108,13 @@ func convertToRomanNumerals(number int) string {
 		var romanNextUnit string
 
 		if place != 1000 {
-			romanFive = inverted[place*5]
-			romanNextUnit = inverted[place*10]
+			romanFive = numeral.ArabicToRoman[place*5]
+			romanNextUnit = numeral.ArabicToRoman[place*10]
 		}
 
 		conversion := conversionToRoman{
 			quantity:       quantities[place],
-			romanSingle:    inverted[place],
+			romanSingle:    numeral.ArabicToRoman[place],
 			romanFiveTimes: romanFive,
 			romanNextUnit:  romanNextUnit,
 		}

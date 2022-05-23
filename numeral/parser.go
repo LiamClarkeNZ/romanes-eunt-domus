@@ -1,13 +1,17 @@
 package numeral
 
-import "strings"
+import (
+	"errors"
+	"fmt"
+	"strings"
+)
 
 // Parse numerals into a slice of structs representing:
 //	* the value of the individual numeral
 //  * what role the numeral plays - is it additive, or subtractive
 // The algorithm of determining additive/subtractive is simple - any smaller number preceding a larger
 // number is considered subtractive
-func Parse(romanNumerals string) []RomanNumeral {
+func Parse(romanNumerals string, postel *bool) ([]RomanNumeral, error) {
 	fullyParsed := make([]RomanNumeral, 0, len(romanNumerals))
 	partiallyParsed := make([]RomanNumeral, 0)
 
@@ -32,6 +36,15 @@ func Parse(romanNumerals string) []RomanNumeral {
 			partiallyParsed = append(partiallyParsed, converted)
 		case LessThan:
 			// This digit is bigger, so everything in the buffer is subtractive
+
+			// If sanity checking is on, ensure that subtractive numerals aren't turning their root number to 0 or negative
+			if *postel {
+				err := sanityCheckSubtractive(&partiallyParsed, &converted)
+				if err != nil {
+					return nil, err
+				}
+			}
+
 			fullyParsed = completePartiallyParsed(fullyParsed, partiallyParsed, Subtractive)
 			partiallyParsed = nil
 			partiallyParsed = append(partiallyParsed, converted)
@@ -44,7 +57,27 @@ func Parse(romanNumerals string) []RomanNumeral {
 		fullyParsed = completePartiallyParsed(fullyParsed, partiallyParsed, Additive)
 	}
 
-	return fullyParsed
+	return fullyParsed, nil
+}
+
+// Check that subtractively prefixed numerals don't reduce current value to 0 or below e.g.,
+// IIIIV is 1, that's okay
+// IIIIIV is 0, not okay
+// IIIIIIIV is -2, super not okay
+func sanityCheckSubtractive(partiallyParsedBuffer *[]RomanNumeral, current *RomanNumeral) error {
+	totalSubtractive := 0
+	asRomanAgain := make([]string, len(*partiallyParsedBuffer))
+	for _, pp := range *partiallyParsedBuffer {
+		totalSubtractive += pp.Value()
+		asRomanAgain = append(asRomanAgain, ArabicToRoman[pp.Value()])
+	}
+
+	currentVal := (*current).Value()
+	if totalSubtractive >= currentVal {
+		errMsg := fmt.Sprintf("%s%s converts to a number <= 0, which is most likely not intended", strings.Join(asRomanAgain, ""), ArabicToRoman[currentVal])
+		return errors.New(errMsg)
+	}
+	return nil
 }
 
 func completePartiallyParsed(completed, partially []RomanNumeral, contribution Contribution) []RomanNumeral {

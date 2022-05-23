@@ -1,6 +1,7 @@
 package numeral
 
 import (
+	"reflect"
 	tu "roman/testingutil"
 	"testing"
 )
@@ -20,7 +21,16 @@ var (
 	subFive       = subtractiveNumeral(5)
 	subTen        = subtractiveNumeral(10)
 	subOneHundred = subtractiveNumeral(100)
+	yeah          = true
+	nah       = false
 )
+
+// Wrap to ignore error and still meet single arg generic requirements.
+func liberalParse(input string) []RomanNumeral {
+	result, _ := Parse(input, &nah)
+	return result
+}
+
 
 func TestSingleNumerals(t *testing.T) {
 	tests := []parserTestCase{
@@ -32,7 +42,8 @@ func TestSingleNumerals(t *testing.T) {
 		{Input: "D", Expected: []RomanNumeral{fiveHundred}},
 		{Input: "M", Expected: []RomanNumeral{oneThousand}},
 	}
-	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
+
+	tu.RunUnaryFuncTests(t, "Parse", liberalParse, tests)
 }
 
 func TestAdditiveNumerals(t *testing.T) {
@@ -45,7 +56,7 @@ func TestAdditiveNumerals(t *testing.T) {
 		{Input: "XXVI", Expected: []RomanNumeral{ten, ten, five, one}},
 		{Input: "MMDCL", Expected: []RomanNumeral{oneThousand, oneThousand, fiveHundred, oneHundred, fifty}},
 	}
-	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", liberalParse, tests)
 }
 
 func TestSubtractiveNumerals(t *testing.T) {
@@ -56,7 +67,7 @@ func TestSubtractiveNumerals(t *testing.T) {
 		{Input: "VL", Expected: []RomanNumeral{subFive, fifty}},
 		{Input: "CM", Expected: []RomanNumeral{subOneHundred, oneThousand}},
 	}
-	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", liberalParse, tests)
 }
 
 func TestCaseInsensitivity(t *testing.T) {
@@ -64,7 +75,7 @@ func TestCaseInsensitivity(t *testing.T) {
 		{Input: "i", Expected: []RomanNumeral{one}},
 		{Input: "iv", Expected: []RomanNumeral{subOne, five}},
 	}
-	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", liberalParse, tests)
 }
 
 func TestScenariosFromSpec(t *testing.T) {
@@ -73,7 +84,18 @@ func TestScenariosFromSpec(t *testing.T) {
 		{Input: "XIIII", Expected: []RomanNumeral{ten, one, one, one, one}},
 		{Input: "MCMXCIX", Expected: []RomanNumeral{oneThousand, subOneHundred, oneThousand, subTen, oneHundred, subOne, ten}},
 	}
-	tu.RunUnaryFuncTests(t, "Parse", Parse, tests)
+	tu.RunUnaryFuncTests(t, "Parse", liberalParse, tests)
+}
+
+func TestLessLiberalParse(t *testing.T) {
+
+	if result, _ := Parse("iiiiv", &yeah); !reflect.DeepEqual(result, []RomanNumeral{subOne, subOne, subOne, subOne, five}) {
+		t.Errorf("Failed to parse iiiiv...")
+	}
+
+	if _, err := Parse("iiiiiv", &yeah); err == nil {
+		t.Errorf("Expected Parse to throw an error for iiiiiv")
+	}
 }
 
 // testing utils below

@@ -3,6 +3,7 @@ package numeral
 import "strconv"
 
 var RomanNumeralValues map[string]int
+var ArabicToRoman map[int]string
 
 func init() {
 	m := make(map[string]int)
@@ -14,6 +15,12 @@ func init() {
 	m["V"] = 5
 	m["I"] = 1
 	RomanNumeralValues = m
+
+	ArabicToRoman = make(map[int]string)
+	for roman, arabic := range RomanNumeralValues {
+		ArabicToRoman[arabic] = roman
+	}
+
 }
 
 

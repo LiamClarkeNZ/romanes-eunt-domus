@@ -6,13 +6,18 @@ import (
 	"testing"
 )
 
-func TestSumNumerals(t *testing.T) {
+func parse(input string) []numeral.RomanNumeral {
+	noStrict := false
+	result, _ := numeral.Parse(input, &noStrict)
+	return result
+}
+ func TestSumNumerals(t *testing.T) {
 	testCases := []tu.UnaryFuncTestCase[[]numeral.RomanNumeral, int]{
-		{Input: numeral.Parse("ix"), Expected: 9},
-		{Input: numeral.Parse("XIII"), Expected: 13},
-		{Input: numeral.Parse("XIIII"), Expected: 14},
-		{Input: numeral.Parse("XIV"), Expected: 14},
-		{Input: numeral.Parse("MCMXCIX"), Expected: 1999},
+		{Input: parse("ix"), Expected: 9},
+		{Input: parse("XIII"), Expected: 13},
+		{Input: parse("XIIII"), Expected: 14},
+		{Input: parse("XIV"), Expected: 14},
+		{Input: parse("MCMXCIX"), Expected: 1999},
 	}
 	tu.RunUnaryFuncTests(t, "sumNumerals", sumNumerals, testCases)
 
